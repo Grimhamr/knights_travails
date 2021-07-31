@@ -118,6 +118,10 @@ class KnightMoves
   end
   
   def generate_children(node = root, current_square = @initial_square, moves_so_far = 0)
+    if @generated_nodes.include?(node.square)
+      puts "generated nodes list: #{@generated_nodes} contains node of square: #{node.square}. not proceeding"
+      return
+    end
     puts "generating children for square #{current_square}"
     puts "The available moves of a knight from #{current_square} are: "
     next_moves = available_moves(square_to_coordinates(current_square)).map{|coordinates| coordinates_to_square(coordinates)}
@@ -128,27 +132,46 @@ class KnightMoves
     i = 0
  #generate child nodes for next_moves 
     while i < next_moves.length
-   node.child_nodes[i] = next_moves[i]
-   i += 1
+      node.child_nodes[i] = Node.new(next_moves[i],node) 
+      puts "child node of #{node.square} generated:"
+      p node.child_nodes[i].square
+      i += 1
     end
-    puts "child nodes of #{node} are:"
-    p node.child_nodes
-    p node
+   
+    puts "parent node of #{node.square} is: #{node.parent_node.square}" unless node.parent_node.nil?
+    @generated_nodes.push(node.square)
+    @generated_nodes = @generated_nodes.uniq
+    p "we have seen all moves from #{node.square}; we shouldn't recheck it"
+    puts @generated_nodes
+    #p node
     moves_so_far += 1
  #check if child nodes.data == final_square
-    if node.child_nodes.include?(@final_square)
+    if next_moves.include?(@final_square)
       puts "The knight travelled to #{@final_square} from #{@initial_square} in #{moves_so_far} moves"
-   #if yes, count nodes and print out "you reached final_square in number_of_nodes moves!"
-   #if not, recurse 
+      return
+      exit
+    else
+      #if not
+      puts "final square #{@final_square} not found in next moves #{next_moves}"
+      #@generated_nodes = (@generated_nodes + next_moves).uniq
+      puts "Nodes already generated are: #{@generated_nodes}"
+      i = 0
+      while i <= node.child_nodes.length
+        puts "recursing to generate children for #{node.child_nodes[i].square}" unless node.child_nodes[i].square.nil?
+        generate_children(node.child_nodes[i],node.child_nodes[i].square,moves_so_far)
+        i += 1
+      end
+      
+   
     end
   end
 
   def build_move_tree(initial_square,final_square)
     #create root node of initial square
-    
+    @generated_nodes = []
     root = Node.new(initial_square,nil)
     puts "Knight starts off at square #{root.square}"
-
+    
     generate_children(root)
     
      
@@ -158,10 +181,10 @@ class KnightMoves
   end
 end
 d4_to_f2 = KnightMoves.new("d4","f2")
-d4_to_f2.knight_moves
+d4_to_f2.knight_moves #D4 -> E6 -> C5 -> D3 -> F2
 
-a1_to_b3 = KnightMoves.new("a1","b3")
-a1_to_b3.knight_moves
+#a1_to_b3 = KnightMoves.new("a1","b3")
+#a1_to_b3.knight_moves
 =begin
 a8_to_f2 = KnightMoves.new("a8","f2")
 a8_to_f2.knight_moves
