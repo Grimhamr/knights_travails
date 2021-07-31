@@ -24,9 +24,25 @@ Output what that full path looks like, e.g.:
     [4,3]
     
 =end
+class Node
+  attr_accessor :square, :parent_node, :child_nodes
+    def initialize(square,parent_node)
+      @square = square
+      @parent_node = parent_node
+      @child_nodes = []
+     
+    end
 
+end
 class KnightMoves
 
+  def initialize(initial_square,final_square)
+
+    @initial_square = initial_square
+    @final_square = final_square
+
+  end
+  
   def square_to_coordinates(square)
     square_coordinates=[]
 
@@ -49,15 +65,18 @@ class KnightMoves
   def available_moves(current_square)
     #puts "Calculating available moves"
     available_moves = []
-
+    #puts "finding available move 0 from #{current_square} "
     available_moves[0]=[current_square[0]-2,current_square[1]-1] 
-
+    #puts "finding available move 1"
     available_moves[1]=[current_square[0]-1,current_square[1]-2] 
-    
+    #puts "finding available move 2"
+
     available_moves[2]=[current_square[0]+1,current_square[1]-2] 
-    
+    #puts "finding available move 3"
+
     available_moves[3]=[current_square[0]+2,current_square[1]-1] 
-    
+   # puts "finding available move 4"
+
     available_moves[4]=[current_square[0]-2,current_square[1]+1] 
     
     available_moves[5]=[current_square[0]-1,current_square[1]+2]
@@ -81,35 +100,74 @@ class KnightMoves
   end
 
 
-  def knight_moves(initial_square,final_square)
-    initial_square.upcase!
-    final_square.upcase!
-    puts "initial and final squares are #{initial_square} and #{final_square}"
+  def knight_moves
+    @initial_square.upcase!
+    @final_square.upcase!
+    puts "initial square: #{@initial_square} \nfinal square: #{@final_square}"
 
-    initial_square_coordinates = square_to_coordinates(initial_square)
-    puts "coordinates of initial square are #{initial_square_coordinates}"
-    final_square_coordinates = square_to_coordinates(final_square)
-    puts "coordinates of final square are #{final_square_coordinates}"
+    @initial_square_coordinates = square_to_coordinates(@initial_square)
+    puts "coordinates of initial square are #{@initial_square_coordinates}"
+    @final_square_coordinates = square_to_coordinates(@final_square)
+    puts "coordinates of final square are #{@final_square_coordinates}"
 
-    puts "The available moves of a knight from #{initial_square} are: "#{available_moves(initial_square_coordinates)}"
-    #
-    next_moves = available_moves(initial_square_coordinates).map{|coordinates| coordinates_to_square(coordinates)}
-
-    puts next_moves #array
+    build_move_tree(@initial_square,@final_square)
 
     
 
+
+  end
+  
+  def generate_children(node = root, current_square = @initial_square, moves_so_far = 0)
+    puts "generating children for square #{current_square}"
+    puts "The available moves of a knight from #{current_square} are: "
+    next_moves = available_moves(square_to_coordinates(current_square)).map{|coordinates| coordinates_to_square(coordinates)}
+    puts next_moves #array
+
+   
+    
+    i = 0
+ #generate child nodes for next_moves 
+    while i < next_moves.length
+   node.child_nodes[i] = next_moves[i]
+   i += 1
+    end
+    puts "child nodes of #{node} are:"
+    p node.child_nodes
+    p node
+    moves_so_far += 1
+ #check if child nodes.data == final_square
+    if node.child_nodes.include?(@final_square)
+      puts "The knight travelled to #{@final_square} from #{@initial_square} in #{moves_so_far} moves"
+   #if yes, count nodes and print out "you reached final_square in number_of_nodes moves!"
+   #if not, recurse 
+    end
+  end
+
+  def build_move_tree(initial_square,final_square)
+    #create root node of initial square
+    
+    root = Node.new(initial_square,nil)
+    puts "Knight starts off at square #{root.square}"
+
+    generate_children(root)
+    
+     
+
+
+
   end
 end
-knight_moves("d4","f2")
+d4_to_f2 = KnightMoves.new("d4","f2")
+d4_to_f2.knight_moves
 
-knight_moves("a1","f2")
+a1_to_b3 = KnightMoves.new("a1","b3")
+a1_to_b3.knight_moves
+=begin
+a8_to_f2 = KnightMoves.new("a8","f2")
+a8_to_f2.knight_moves
 
-knight_moves("a8","f2")
+h4_to_f2 = KnightMoves.new("h4","f2")
+h4_to_f2.knight_moves
 
-
-knight_moves("h4","f2")
-
-
-
+=end
     
