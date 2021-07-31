@@ -117,47 +117,62 @@ class KnightMoves
 
   end
   
+  def track_parents(node, parents_array = [])
+    
+    unless node.nil?
+      #puts "tracking parents of #{node.square}" unless node.parent_node.nil?
+      
+      parents_array.insert(0,node.square)
+      track_parents(node.parent_node,parents_array)
+    end
+    parents_array
+  end
+
   def generate_children(node = root, current_square = @initial_square, moves_so_far = 0)
     if @generated_nodes.include?(node.square)
-      puts "generated nodes list: #{@generated_nodes} contains node of square: #{node.square}. not proceeding"
+      #puts "generated nodes list: #{@generated_nodes} contains node of square: #{node.square}. not proceeding"
       return
     end
-    puts "generating children for square #{current_square}"
+    #puts "generating children for square #{current_square}"
     puts "The available moves of a knight from #{current_square} are: "
     next_moves = available_moves(square_to_coordinates(current_square)).map{|coordinates| coordinates_to_square(coordinates)}
     puts next_moves #array
-
-   
-    
     i = 0
  #generate child nodes for next_moves 
     while i < next_moves.length
       node.child_nodes[i] = Node.new(next_moves[i],node) 
-      puts "child node of #{node.square} generated:"
+     # puts "child node of #{node.square} generated:"
       p node.child_nodes[i].square
       i += 1
     end
    
-    puts "parent node of #{node.square} is: #{node.parent_node.square}" unless node.parent_node.nil?
+   #puts "parent node of #{node.square} is: #{node.parent_node.square}" unless node.parent_node.nil?
     @generated_nodes.push(node.square)
     @generated_nodes = @generated_nodes.uniq
-    p "we have seen all moves from #{node.square}; we shouldn't recheck it"
-    puts @generated_nodes
+   # p "we have seen all moves from #{node.square}; we shouldn't recheck it"
+    #puts @generated_nodes
     #p node
     moves_so_far += 1
  #check if child nodes.data == final_square
     if next_moves.include?(@final_square)
-      puts "The knight travelled to #{@final_square} from #{@initial_square} in #{moves_so_far} moves"
+      puts "#{@final_square} found in next moves #{next_moves}"
+      @results_hash[moves_so_far] = track_parents(node)
+
+      @number_of_moves.push(moves_so_far)
+      #track parent nodes
+
       return
-      exit
+      
     else
       #if not
       puts "final square #{@final_square} not found in next moves #{next_moves}"
       #@generated_nodes = (@generated_nodes + next_moves).uniq
-      puts "Nodes already generated are: #{@generated_nodes}"
+      #puts "Nodes already generated are: #{@generated_nodes}"
       i = 0
-      while i <= node.child_nodes.length
-        puts "recursing to generate children for #{node.child_nodes[i].square}" unless node.child_nodes[i].square.nil?
+      node.child_nodes.compact!
+      while i < node.child_nodes.length
+        #puts "examining #{node.child_nodes} for potential recursion"
+        #puts "recursing to generate children for #{node.child_nodes[i].square}" unless node.child_nodes[i].nil?
         generate_children(node.child_nodes[i],node.child_nodes[i].square,moves_so_far)
         i += 1
       end
@@ -168,13 +183,17 @@ class KnightMoves
 
   def build_move_tree(initial_square,final_square)
     #create root node of initial square
+    @results_hash = {}
+    @number_of_moves = []
     @generated_nodes = []
     root = Node.new(initial_square,nil)
     puts "Knight starts off at square #{root.square}"
     
     generate_children(root)
     
-     
+    puts "The knight travelled to #{@final_square} from #{@initial_square} in #{@number_of_moves.min} moves"
+
+    p @results_hash
 
 
 
